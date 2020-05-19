@@ -14,6 +14,8 @@ ligand_mol = Molecule(open('ligand1.mol', 'rb'), file_format='mol')
 
 # Use Modeller to combine the protein and ligand into a complex
 protein_pdb = PDBFile('protein.pdb')
+
+# reading the ligand gives lots of warnings about "duplicate atom" but this seems incorrect
 ligand_pdb = PDBFile('ligand1.pdb')
 
 # Approach 1
@@ -37,7 +39,7 @@ system_generator = SystemGenerator(
     small_molecule_forcefield='gaff-2.11',
     forcefield_kwargs=forcefield_kwargs)
 
-system = system_generator.create_system(complex_pdb.topology, molecules=[ligand_mol])
+system = system_generator.create_system(complex_pdb.topology, molecules=ligand_mol)
 integrator = LangevinIntegrator(300 * unit.kelvin, 1 / unit.picosecond, 0.002 * unit.picoseconds)
 simulation = Simulation(complex_pdb.topology, system, integrator)
 simulation.context.setPositions(complex.positions)
