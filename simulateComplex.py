@@ -8,7 +8,7 @@ from simtk.openmm import *
 import parmed
 
 # Create an openforcefield Molecule object
-ligand_mol = Molecule(open('ligand1.mol', 'rb'), file_format='mol')
+ligand_mol = Molecule.from_file('ligand1.mol', file_format='sdf')
 # can't read as PDB as "No toolkits in registry can read file"
 #complex_pdb = Molecule(open('complex1.pdb', 'rb'), file_format='pdb')
 
@@ -42,9 +42,8 @@ system_generator = SystemGenerator(
 system = system_generator.create_system(complex_pdb.topology, molecules=ligand_mol)
 integrator = LangevinIntegrator(300 * unit.kelvin, 1 / unit.picosecond, 0.002 * unit.picoseconds)
 simulation = Simulation(complex_pdb.topology, system, integrator)
-simulation.context.setPositions(complex.positions)
+simulation.context.setPositions(complex_pdb.positions)
 print('Minimising')
 simulation.minimizeEnergy()
 
 print('Done')
-
