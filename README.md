@@ -185,6 +185,10 @@ Probably nothing OpenMM can do about this.
 
 ## simulateComplexWithSolvent.py: Simulation with explicit solvent
 
+```
+python simulateComplexWithSolvent.py
+```
+
 Build on the previous [simulateComplex.py]() example by including explicit solvent.
 This is not currently working because the minimisation step blows up (the ligand and protein move outside
 the box of waters). Probably this is something related to the periodic box setup.
