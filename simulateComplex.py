@@ -49,10 +49,10 @@ simulation = Simulation(complex_pdb.topology, system, integrator)
 simulation.context.setPositions(complex_pdb.positions)
 print('Minimising')
 simulation.minimizeEnergy()
-simulation.reporters.append(PDBReporter('output.pdb', 1000))
+simulation.reporters.append(PDBReporter('output1.pdb', 1000))
 simulation.reporters.append(StateDataReporter(sys.stdout, 1000, step=True, potentialEnergy=True, temperature=True))
 print('Starting simulation')
-simulation.step(10000)
+simulation.step(500000)
 
 
 print('Done')
