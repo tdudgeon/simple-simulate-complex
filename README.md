@@ -9,6 +9,10 @@ What I'm looking for is for this to be as simple as possible:
 4. parameterise the ligand using GAFF
 5. simulate
 
+## simulateComplex.py: Basic Simulation
+
+How to set up a protein-ligand complex simulation.
+
 After some help from @jchodera I put together this example
 to help illustrate this. Note the issues that seem present at the bottom of this doc.
 
@@ -177,3 +181,14 @@ Clearly these warnings are incorrect. The atoms are clearly not duplicates.
 `Warning: In AmberToolsToolkitwrapper.compute_partial_charges_am1bcc: Molecule 'CCOC(=O)c1ccccc1' has more than one conformer, but this function will only generate charges for the first one.`
 when reading the ligand. Clearly it is wrong. There is only one conformer present.
 Probably nothing OpenMM can do about this.
+
+
+## simulateComplexWithSolvent.py: Simulation with explicit solvent
+
+Build on the previous [simulateComplex.py]() example by including explicit solvent.
+This is not currently working because the minimisation step blows up (the ligand and protein move outside
+the box of waters). Probably this is something related to the periodic box setup.
+
+Another issue is defining the size of the box. This is currently hard-coded to values that look about 
+right, but it needs to be calculated on the fly. Presumably OpenMM provides an easy way to do this,
+but I can't find it!
