@@ -17,7 +17,7 @@ After some help from @jchodera I put together this example
 to help illustrate this. Note the issues that seem present at the bottom of this doc.
 
 Note: currently this is running with OpenMM 7.4.1 because https://github.com/openmm/openmm/issues/2683
-makes it difficult to use 3.5.0.
+makes it difficult to use 7.5.0.
 
 The example:
 
