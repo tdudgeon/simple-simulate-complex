@@ -10,6 +10,9 @@ from simtk.openmm.app import PDBFile, Simulation, Modeller, PDBReporter, StateDa
 from simtk.openmm import *
 import numpy as np
 
+platform = Platform.getPlatformByName('CUDA') # or 'OpenCL'
+platform.setPropertyDefaultValue('Precision', 'mixed')
+
 # Create an openforcefield Molecule object
 ligand_mol = Molecule.from_file('ligand1.sdf', file_format='sdf')
 print(ligand_mol)
@@ -37,7 +40,7 @@ print('System has %d atoms' % modeller.topology.getNumAtoms())
 modeller.add(ligand_pdb.topology, ligand_pdb.positions)
 print('System has %d atoms' % modeller.topology.getNumAtoms())
 
-box_vectors = unit.Quantity(np.diag([70, 70, 70]), unit.angstrom)
+box_vectors = unit.Quantity(np.diag([100, 100, 100]), unit.angstrom)
 modeller.topology.setPeriodicBoxVectors(box_vectors)
 
 # Solvate
@@ -54,7 +57,8 @@ integrator = LangevinIntegrator(300 * unit.kelvin, 1 / unit.picosecond, 0.002 * 
 print('Uses Periodic box:', system.usesPeriodicBoundaryConditions())
 print('Default Periodic box:', system.getDefaultPeriodicBoxVectors())
 
-simulation = Simulation(complex_pdb.topology, system, integrator)
+simulation = Simulation(complex_pdb.topology, system, integrator, platform=platform)
+
 context = simulation.context
 context.setPositions(complex_pdb.positions)
 
