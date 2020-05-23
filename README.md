@@ -9,7 +9,13 @@ What I'm looking for is for this to be as simple as possible:
 4. parameterise the ligand using GAFF
 5. simulate
 
-## simulateComplex.py: Basic Simulation
+## simulateProtein.py: Basic Protein Simulation
+
+Minimal example of setting up a protein and doing a simple minimisation.
+
+Not much to say about this.
+
+## simulateComplex.py: Basic Complex Simulation
 
 How to set up a protein-ligand complex simulation.
 
@@ -21,8 +27,10 @@ makes it difficult to use 7.5.0.
 
 The example:
 
-1. protein.pdb - a protein with hydrogens ready to simulate (as done in [](simulateProtein.py))
+1. protein.pdb - a protein with hydrogens ready to simulate (as done in [simulateProtein.py]()
 2. ligand1.mol/sdf/pdb - ligand with hydrogens in mol, sdf and pdb formats
+
+The system has 4,666 atoms.
 
 Try the simulation as:
 
@@ -155,20 +163,20 @@ acdoctor mode has completed checking the input file.
 Minimising
 Starting simulation
 #"Step","Potential Energy (kJ/mole)","Temperature (K)"
-1000,-21518.453125,267.3147547214519
-2000,-19785.859375,298.57485160064016
-3000,-19828.603515625,306.5371419137492
-4000,-19524.287109375,298.33132752385455
-5000,-19886.439453125,298.03124036938266
-6000,-20094.91015625,302.5826579116727
-7000,-19967.19921875,299.14510478741903
-8000,-20275.4765625,300.6640170468736
-9000,-20103.796875,295.850503453827
-10000,-20001.4921875,295.04521624908136
+1000,-21359.154296875,268.5236774751334
+2000,-19710.203125,293.58898104002344
+3000,-19381.2421875,299.94436354292463
+4000,-19705.9765625,305.48034188626076
+5000,-19666.29296875,300.085426872283
+6000,-19863.771484375,303.32777935470097
+7000,-19750.9375,299.00092453205923
+8000,-19802.427734375,302.1438445791931
+9000,-19993.369140625,305.26666035248087
+10000,-20258.119140625,302.8460967929978
 Done
 ```
 
-The file `output.pdb` is generated and does contain a trajectory of the complex.
+The file `minimised1.pdb` and `output1.pdb` are generated and does contain a trajectory of the complex.
 So that example is now working, but I don't see it as optimal because of these issues:
 
 1. The ligand has to be read twice, once as SDF so that Amber can parameterise it, once as
@@ -190,9 +198,8 @@ python simulateComplexWithSolvent.py
 ```
 
 Build on the previous [simulateComplex.py]() example by including explicit solvent.
-This is not currently working because the minimisation step blows up (the ligand and protein move outside
-the box of waters). Probably this is something related to the periodic box setup.
+The system now has 58,052 atoms and takes quite a lot longer to simulate, almost 2 mins using
+my laptop's GeForce GTX 1050 GPU. A 1ns simulation takes just under one hour.
 
-Another issue is defining the size of the box. This is currently hard-coded to values that look about 
-right, but it needs to be calculated on the fly. Presumably OpenMM provides an easy way to do this,
-but I can't find it!
+Output is similar to the previous example, and the same issues are present.
+See the code for details and gotchas.

@@ -1,4 +1,4 @@
 .idea
-complex1.pdb
-minimised1.pdb
-output1.pdb
+complex*.pdb
+minimised*.pdb
+output*.pdb
