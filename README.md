@@ -203,3 +203,34 @@ my laptop's GeForce GTX 1050 GPU. A 1ns simulation takes just under one hour.
 
 Output is similar to the previous example, and the same issues are present.
 See the code for details and gotchas.
+
+
+## Protein and ligand preparation
+
+The previous methods were a bit of a cheat as they used a protein and ligand that had been fully prepared for
+simulation. It's pretty unlikely that you will start with molecules in that state. There are 2 scripts that
+illustrate how preparation can be done. The aim is to be able to do this entirely within OpenMM, but it seems that
+that's not quite possible.
+
+The scripts are:
+
+[prepareProtein.py]()
+```
+ python prepareProtein.py
+```
+This strips out everything that is not the protein, fixes problems in the protein, adds hydrogens and writes the
+file `protein_prepared.pdb`. Tha file can be used as inputs to the previous simulations.
+
+[prepareComplex.py]()
+```
+ python prepareComplex.py
+```
+This aims to build a PDB file with the protein and ligand (and optionally the crystallographic waters) that is
+ready for simulation. It writes the files `protein_prepared.pdb` and `ligand_prepared.pdb`.
+It doesn't do everything that's needed, so other toolkits will be required:
+- ligand does not have hydrogens added
+- ligand can only be written to PDB format
+
+## Improvements
+
+Suggestions for how to improve these scripts and/or additional examples are welcome.

@@ -81,6 +81,6 @@ with open('minimised1.pdb', 'w') as outfile:
 simulation.reporters.append(PDBReporter('output1.pdb', 1000, False))
 simulation.reporters.append(StateDataReporter(sys.stdout, 1000, step=True, potentialEnergy=True, temperature=True))
 print('Starting simulation')
-simulation.step(10000)
+simulation.step(500000)
 
 print('Done')

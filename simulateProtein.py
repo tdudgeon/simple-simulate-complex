@@ -1,6 +1,5 @@
 from openmmforcefields.generators import SystemGenerator
 from simtk import unit
-from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Simulation
 from simtk.openmm import *
 
@@ -8,8 +7,7 @@ protein_pdb = PDBFile('protein.pdb')
 
 print('Preparing system')
 # Initialize a SystemGenerator
-system_generator = SystemGenerator(
-    forcefields=['amber/ff14SB.xml'])
+system_generator = SystemGenerator(forcefields=['amber/ff14SB.xml'])
 
 system = system_generator.create_system(protein_pdb.topology)
 integrator = LangevinIntegrator(300 * unit.kelvin, 1 / unit.picosecond, 0.002 * unit.picoseconds)
