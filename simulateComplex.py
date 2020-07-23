@@ -5,25 +5,30 @@ from simtk import unit
 from simtk.openmm import app
 from simtk.openmm.app import PDBFile, Simulation, Modeller, PDBReporter, StateDataReporter
 from simtk.openmm import *
-import parmed
 
-# Create an openforcefield Molecule object
-ligand_mol = Molecule.from_file('ligand1.sdf', file_format='sdf')
-print(ligand_mol)
-# can't read as PDB as "No toolkits in registry can read file"
-#complex_pdb = Molecule(open('complex1.pdb', 'rb'), file_format='pdb')
+from rdkit import Chem
+
+# Read the molfile into RDKit, add Hs and create an openforcefield Molecule object
+print('Reading ligand')
+rdkitmol = Chem.MolFromMolFile('ligand1.mol')
+print('Adding hydrogens')
+rdkitmolh = Chem.AddHs(rdkitmol, addCoords=True)
+ligand_mol = Molecule(rdkitmolh)
 
 print('Reading protein')
 protein_pdb = PDBFile('protein.pdb')
 
-# reading the ligand gives lots of warnings about "duplicate atom" but this seems incorrect
-print('Reading ligand')
-ligand_pdb = PDBFile('ligand1.pdb')
-
 # Use Modeller to combine the protein and ligand into a complex
 print('Preparing complex')
 modeller = Modeller(protein_pdb.topology, protein_pdb.positions)
-modeller.add(ligand_pdb.topology, ligand_pdb.positions)
+
+# This next bit is black magic.
+# Modeller needs topology and positions. Lots of trial and error found that this is what works to get these from
+# an openforcefield Molecule object that was created from a RDKit molecule.
+# The topology part is described in the openforcefield API but the positions part grabs the first (and only)
+# conformer and passes it to Modeller. It works. Don't ask why!
+modeller.add(ligand_mol.to_topology().to_openmm(), ligand_mol.conformers[0])
+
 print('System has %d atoms' % modeller.topology.getNumAtoms())
 PDBFile.writeFile(modeller.topology, modeller.positions, open('complex1.pdb', 'w'))
 

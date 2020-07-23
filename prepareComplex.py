@@ -1,9 +1,14 @@
 from simtk.openmm.app import *
 from simtk.openmm import *
-from simtk import unit
-from sys import stdout
 from pdbfixer import PDBFixer
-from openmmforcefields.generators import SystemGenerator
+
+if len(sys.argv) != 4:
+    print('Usage: python prepareComplex.py input.pdb ligand.mol system')
+    exit(1)
+
+pdb_in = sys.argv[1]
+ligand_in = sys.argv[2]
+outname = sys.argv[3]
 
 # This PDB file contains:
 # - the protein (single chain)
@@ -12,7 +17,7 @@ from openmmforcefields.generators import SystemGenerator
 # - A number of waters
 # No hydrogens are present.
 # The C-teminal THR residue is missing an oxygen atom.
-fixer = PDBFixer(filename='protein_orig.pdb')
+fixer = PDBFixer(filename=pdb_in)
 fixer.findMissingResidues()
 fixer.findMissingAtoms()
 fixer.findNonstandardResidues()
@@ -33,11 +38,12 @@ modeller = Modeller(fixer.topology, fixer.positions)
 toDelete = []
 for res in modeller.topology.residues():
     if res.name == 'DMS':
-    	toDelete.append(res)
-    	print('Deleting', res)
+        toDelete.append(res)
+        print('Deleting', res)
 modeller.delete(toDelete)
 
-with open('protein_prepared.pdb', 'w') as outfile:
+
+with open(outname + '_receptor.pdb', 'w') as outfile:
     PDBFile.writeFile(modeller.topology, modeller.positions, file=outfile, keepIds=True)
 
 
@@ -46,7 +52,6 @@ with open('protein_prepared.pdb', 'w') as outfile:
 # Note: this may not be the best way to do this. Other toolkits might be better.
 # Note: your ligand may not be named 'LIG'
 # Note: modeller.addHydrogens() does not work for ligands. We'll need to use another toolkit such as OpenBabel to do this.
-protein_pdb = PDBFile('protein_orig.pdb')
 modeller = Modeller(fixer.topology, fixer.positions)
 toDelete = []
 for res in modeller.topology.residues():
@@ -54,7 +59,7 @@ for res in modeller.topology.residues():
         toDelete.append(res)
 modeller.delete(toDelete)
 
-with open('ligand_prepared.pdb', 'w') as outfile:
+with open(outname + '_ligand.pdb', 'w') as outfile:
     PDBFile.writeFile(modeller.topology, modeller.positions, file=outfile, keepIds=True)
 
 print('Done')

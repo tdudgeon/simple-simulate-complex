@@ -1,0 +1,9 @@
+name: openmm-74
+channels:
+  - omnia
+  - conda-forge
+dependencies:
+  - openmm=7.4.2
+  - openmmforcefields=0.7.4
+  - pdbfixer=1.6
+  - rdkit=2020.03.4
