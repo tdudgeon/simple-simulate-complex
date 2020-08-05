@@ -17,10 +17,12 @@ if len(sys.argv) != 5:
 pdb_in = sys.argv[1]
 mol_in = sys.argv[2]
 output_complex = sys.argv[3] + '_complex.pdb'
-output_traj = sys.argv[3] + '_traj.pdb'
+output_traj_pdb = sys.argv[3] + '_traj.pdb'
+output_traj_dcd = sys.argv[3] + '_traj.dcd'
 output_min = sys.argv[3] + '_minimised.pdb'
 num_steps = int(sys.argv[4])
-print('Processing', pdb_in, 'and', mol_in, 'with', num_steps, 'steps generating outputs', output_complex, output_min, output_traj)
+print('Processing', pdb_in, 'and', mol_in, 'with', num_steps, 'steps generating outputs',
+      output_complex, output_min, output_traj_pdb, output_traj_dcd)
 
 # check whether we have a GPU platform and if so set the precision to mixed
 speed = 0
@@ -99,7 +101,8 @@ with open(output_min, 'w') as outfile:
 
 # run the simulation. The 3rd arg to PDBReporter is important. Again, this applies the
 # 'enforcePeriodicBox=False' logic to ensure you get sensible output.
-simulation.reporters.append(PDBReporter(output_traj, 1000, False))
+simulation.reporters.append(PDBReporter(output_traj_pdb, 1000, enforcePeriodicBox=False))
+simulation.reporters.append(DCDReporter(output_traj_dcd, 1000, enforcePeriodicBox=False))
 simulation.reporters.append(StateDataReporter(sys.stdout, 1000, step=True, potentialEnergy=True, temperature=True))
 print('Starting simulation')
 simulation.step(num_steps)

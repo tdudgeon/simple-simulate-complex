@@ -194,7 +194,7 @@ Probably nothing OpenMM can do about this.
 ## simulateComplexWithSolvent.py: Simulation with explicit solvent
 
 ```
-python simulateComplexWithSolvent.py Mpro-x0397_0_fixed.pdb data/Mpro-x0387_0.mol Mpro-x0387_0 5000
+python simulateComplexWithSolvent.py Mpro-x0387_0_fixed.pdb data/Mpro-x0387_0.mol Mpro-x0387_0 5000
 ```
 
 Build on the previous [simulateComplex.py]() example by including explicit solvent.
@@ -219,7 +219,7 @@ The scripts are:
  python prepareProtein.py protein.pdb protein
 ```
 This strips out everything that is not the protein, fixes problems in the protein, adds hydrogens and writes the
-file `protein_prepared.pdb`. Tha file can be used as inputs to the previous simulations.
+file `protein_prepared.pdb`. That file can be used as inputs to the previous simulations.
 
 [prepareComplex.py]()
 ```
