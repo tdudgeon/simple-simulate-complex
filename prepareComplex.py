@@ -51,7 +51,7 @@ with open(outname + '_receptor.pdb', 'w') as outfile:
 # OpenMM does not support that.
 # Note: this may not be the best way to do this. Other toolkits might be better.
 # Note: your ligand may not be named 'LIG'
-# Note: modeller.addHydrogens() does not work for ligands. We'll need to use another toolkit such as OpenBabel to do this.
+# Note: modeller.addHydrogens() does not work for ligands. We'll need to use another toolkit such as OpenBabel or RDKit to do this.
 modeller = Modeller(fixer.topology, fixer.positions)
 toDelete = []
 for res in modeller.topology.residues():

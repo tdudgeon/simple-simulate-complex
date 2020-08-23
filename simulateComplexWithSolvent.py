@@ -1,18 +1,22 @@
-import sys
+import sys, time
 from openforcefield.topology import Molecule
 from openmmforcefields.generators import SystemGenerator
-from simtk import unit
-from simtk.openmm import app
+from simtk import unit, openmm
+from simtk.openmm import app, Platform, LangevinIntegrator
 from simtk.openmm.app import PDBFile, Simulation, Modeller, PDBReporter, StateDataReporter, DCDReporter
-from simtk.openmm import *
-
 from rdkit import Chem
+
+
+temperature = 300 * unit.kelvin
+equilibration_steps = 200
+reporting_interval = 1000
 
 if len(sys.argv) != 5:
     print('Usage: python simulateComplexWithSolvent2.py input.pdb input.mol output num_steps')
     print('Prepares complex of input.pdb and input.mol and generates complex named output_complex.pdb,')
-    print(' minimised complex named output_minimised.pdb and MD trajectory named output_traj.pdb ')
+    print(' minimised complex named output_minimised.pdb and MD trajectory named output_traj.pdb and/or output_traj.dcd')
     exit(1)
+
 
 pdb_in = sys.argv[1]
 mol_in = sys.argv[2]
@@ -43,6 +47,8 @@ print('Reading ligand')
 rdkitmol = Chem.MolFromMolFile(mol_in)
 print('Adding hydrogens')
 rdkitmolh = Chem.AddHs(rdkitmol, addCoords=True)
+# ensure the chiral centers are all defined
+Chem.AssignAtomChiralTagsFromStructure(rdkitmolh)
 ligand_mol = Molecule(rdkitmolh)
 
 print('Preparing system')
@@ -83,15 +89,15 @@ with open(output_complex, 'w') as outfile:
 
 # Create the system using the SystemGenerator
 system = system_generator.create_system(modeller.topology, molecules=ligand_mol)
-integrator = LangevinIntegrator(300 * unit.kelvin, 1 / unit.picosecond, 0.002 * unit.picoseconds)
-print('Uses Periodic box:', system.usesPeriodicBoundaryConditions())
+integrator = LangevinIntegrator(temperature, 1 / unit.picosecond, 0.002 * unit.picoseconds)
+system.addForce(openmm.MonteCarloBarostat(1*unit.atmospheres, temperature, 25))
 print('Default Periodic box:', system.getDefaultPeriodicBoxVectors())
 
 simulation = Simulation(modeller.topology, system, integrator, platform=platform)
 context = simulation.context
 context.setPositions(modeller.positions)
 
-print('Minimising')
+print('Minimising ...')
 simulation.minimizeEnergy()
 
 # Write out the minimised PDB. The 'enforcePeriodicBox=False' bit is important otherwise the different
@@ -99,12 +105,20 @@ simulation.minimizeEnergy()
 with open(output_min, 'w') as outfile:
     PDBFile.writeFile(modeller.topology, context.getState(getPositions=True, enforcePeriodicBox=False).getPositions(), file=outfile, keepIds=True)
 
-# run the simulation. The 3rd arg to PDBReporter is important. Again, this applies the
-# 'enforcePeriodicBox=False' logic to ensure you get sensible output.
-simulation.reporters.append(PDBReporter(output_traj_pdb, 1000, enforcePeriodicBox=False))
-simulation.reporters.append(DCDReporter(output_traj_dcd, 1000, enforcePeriodicBox=False))
-simulation.reporters.append(StateDataReporter(sys.stdout, 1000, step=True, potentialEnergy=True, temperature=True))
-print('Starting simulation')
-simulation.step(num_steps)
+# equilibrate
+simulation.context.setVelocitiesToTemperature(temperature)
+print('Equilibrating ...')
+simulation.step(equilibration_steps)
 
-print('Done')
+# Run the simulation.
+# The enforcePeriodicBox arg to the reporters is important.
+# It's a bit counter-intuitive that the value needs to be False, but this is needed to ensure that
+# all parts of the simulation end up in the same periodic box when being output.
+# simulation.reporters.append(PDBReporter(output_traj_pdb, reporting_interval, enforcePeriodicBox=False))
+simulation.reporters.append(DCDReporter(output_traj_dcd, reporting_interval, enforcePeriodicBox=False))
+simulation.reporters.append(StateDataReporter(sys.stdout, reporting_interval * 5, step=True, potentialEnergy=True, temperature=True))
+print('Starting simulation with', num_steps, 'steps ...')
+t0 = time.time()
+simulation.step(num_steps)
+t1 = time.time()
+print('Simulation complete in', t1 - t0, 'seconds at', temperature)
