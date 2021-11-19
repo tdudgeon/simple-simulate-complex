@@ -28,12 +28,12 @@ Note: currently this is running with OpenMM 7.4.2 because https://github.com/ope
 makes it difficult to use 7.5.0.
 
 ```
- python simulateComplex.py protein.pdb ligand.mol output 5000
+ python simulateComplex.py protein.pdb ligand1.mol output 5000
 ```
 The arguments:
 
 1. protein.pdb - a protein with hydrogens ready to simulate (as done in [simulateProtein.py]()
-2. ligand.mol - ligand in molfile format
+2. ligand1.mol - ligand in molfile format
 3. The name to use as the base name of the results.
 4. The number of iterations for the simulation.
 
