@@ -4,10 +4,12 @@ channels:
   - plotly
   - conda-forge
 dependencies:
+  - python=3.7
   - openmm=7.4.2
   - openmmforcefields=0.7.4
+  - parmed=3.2
   - pdbfixer=1.6
-  - rdkit=2020.03.4
+  - rdkit=2022.03
   - mdtraj=1.9.4
   - plotly=4.9.0
   - python-kaleido=0.0.3

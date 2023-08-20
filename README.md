@@ -35,7 +35,7 @@ The arguments:
 1. protein.pdb - a protein with hydrogens ready to simulate (as done in [simulateProtein.py]()
 2. ligand1.mol - ligand in molfile format
 3. The name to use as the base name of the results.
-4. The number of iterations for the simulation.
+4. The number of iterations for the simulation. The step size is defined in the script as 2 femtoseconds.
 
 The ligand is read using RDKit and then processed to:
 * Add hydrogens
@@ -49,17 +49,16 @@ The system is then prepared using the appropriate force fields.
 Try the simulation as:
 
 ```
-$ python simulateComplex.py Mpro-x0387_0_fixed.pdb data/Mpro-x0387_0.mol Mpro-x0387_0 5000
+python simulateComplex.py protein.pdb ligand1.mol output 5000
 Warning: Unable to load toolkit 'OpenEye Toolkit'. The Open Force Field Toolkit does not require the OpenEye Toolkits, and can use RDKit/AmberTools instead. However, if you have a valid license for the OpenEye Toolkits, consider installing them for faster performance and additional file format support: https://docs.eyesopen.com/toolkits/python/quickstart-python/linuxosx.html OpenEye offers free Toolkit licenses for academics: https://www.eyesopen.com/academic-licensing
-Processing Mpro-x0387_0_fixed.pdb and data/Mpro-x0387_0.mol with 5000 steps generating outputs Mpro-x0387_0_complex.pdb Mpro-x0387_0_minimised.pdb Mpro-x0387_0_traj.pdb Mpro-x0387_0_traj.dcd
-Set precision for platform CUDA to mixed
+Processing protein.pdb and ligand1.mol with 5000 steps generating outputs output_complex.pdb output_minimised.pdb output_traj.pdb output_traj.dcd
+using platform CPU
 Reading ligand
 Adding hydrogens
 Reading protein
 Preparing complex
-System has 4673 atoms
+System has 4666 atoms
 Preparing system
-Warning: In AmberToolsToolkitwrapper.compute_partial_charges_am1bcc: Molecule '' has more than one conformer, but this function will only generate charges for the first one.
 
 Welcome to antechamber 17.3: molecular input file processor.
 
@@ -80,7 +79,7 @@ acdoctor mode is on: check and diagnosis problems in the input file.
    Status: pass
 acdoctor mode has completed checking the input file.
 
-Info: Total number of electrons: 106; net charge: 0
+Info: Total number of electrons: 80; net charge: 0
 
 Running: /home/timbo/miniconda3/envs/openmm-74/bin/sqm -O -i sqm.in -o sqm.out
 
@@ -105,20 +104,16 @@ acdoctor mode is on: check and diagnosis problems in the input file.
 acdoctor mode has completed checking the input file.
 
 
-Default Periodic box: [Quantity(value=Vec3(x=11.215900000000001, y=0.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=5.2655, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=0.0, z=4.3365), unit=nanometer)]
+Uses Periodic box: False , Default Periodic box: [Quantity(value=Vec3(x=2.0, y=0.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=2.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=0.0, z=2.0), unit=nanometer)]
 Minimising ...
 Equilibrating ...
 Starting simulation with 5000 steps ...
 #"Step","Potential Energy (kJ/mole)","Temperature (K)"
-1000,-12905.476935093218,279.598239742249
-2000,-12666.84060298634,296.43099174154327
-3000,-13110.495784052066,304.59169315932655
-4000,-13014.61967772014,307.1202441925517
-5000,-13061.841891369622,294.2178513158892
-Simulation complete in 6.061023712158203 seconds at 300 K
+5000,-18315.23210555748,332.45093440432925
+Simulation complete in 97.02251291275024 seconds at 330 K
 ```
 
-The files `Mpro-x0387_0_complex.pdb`, `Mpro-x0387_0_minimised.pdb` and `Mpro-x0387_0_traj.dcd` are generated.
+The files `output_complex.pdb`, `output_minimised.pdb` and `output_traj.dcd` are generated.
 The first is the complex, the second is that complex mimimised ready for simulation, the third the MD trajectory in DCD format.
 
 See the code for details and gotchas.
@@ -126,7 +121,7 @@ See the code for details and gotchas.
 ## simulateComplexWithSolvent.py: Simulation with explicit solvent
 
 ```
-python simulateComplexWithSolvent.py Mpro-x0387_0_fixed.pdb data/Mpro-x0387_0.mol Mpro-x0387_0 5000
+python simulateComplexWithSolvent.py protein.pdb ligand1.mol output 5000
 ```
 
 Build on the previous [simulateComplex.py]() example by including explicit solvent.

@@ -6,6 +6,9 @@ from simtk.openmm import app, Platform, LangevinIntegrator
 from simtk.openmm.app import PDBFile, Simulation, Modeller, PDBReporter, StateDataReporter, DCDReporter
 from rdkit import Chem
 
+import utils
+
+t0 = time.time()
 
 temperature = 300 * unit.kelvin
 equilibration_steps = 200
@@ -28,19 +31,8 @@ num_steps = int(sys.argv[4])
 print('Processing', pdb_in, 'and', mol_in, 'with', num_steps, 'steps generating outputs',
       output_complex, output_min, output_traj_pdb, output_traj_dcd)
 
-# check whether we have a GPU platform and if so set the precision to mixed
-speed = 0
-for i in range(Platform.getNumPlatforms()):
-    p = Platform.getPlatform(i)
-    # print(p.getName(), p.getSpeed())
-    if p.getSpeed() > speed:
-        platform = p
-        speed = p.getSpeed()
-
-if platform.getName() == 'CUDA' or platform.getName() == 'OpenCL':
-    platform.setPropertyDefaultValue('Precision', 'mixed')
-    print('Set precision for platform', platform.getName(), 'to mixed')
-
+# get the chosen or fastest platform
+platform = utils.get_platform()
 
 # Read the molfile into RDKit, add Hs and create an openforcefield Molecule object
 print('Reading ligand')
@@ -89,9 +81,16 @@ with open(output_complex, 'w') as outfile:
 
 # Create the system using the SystemGenerator
 system = system_generator.create_system(modeller.topology, molecules=ligand_mol)
-integrator = LangevinIntegrator(temperature, 1 / unit.picosecond, 0.002 * unit.picoseconds)
+
+friction_coeff = 1 / unit.picosecond
+step_size = 0.002 * unit.picoseconds
+duration = (step_size * num_steps).value_in_unit(unit.nanoseconds)
+print('Simulating for {} ns'.format(duration))
+
+integrator = LangevinIntegrator(temperature, friction_coeff, step_size)
 system.addForce(openmm.MonteCarloBarostat(1*unit.atmospheres, temperature, 25))
-print('Default Periodic box:', system.getDefaultPeriodicBoxVectors())
+print('Uses Periodic box: {}, Default Periodic box: {}'.format(
+    system.usesPeriodicBoundaryConditions(), system.getDefaultPeriodicBoxVectors()))
 
 simulation = Simulation(modeller.topology, system, integrator, platform=platform)
 context = simulation.context
@@ -118,7 +117,9 @@ simulation.step(equilibration_steps)
 simulation.reporters.append(DCDReporter(output_traj_dcd, reporting_interval, enforcePeriodicBox=False))
 simulation.reporters.append(StateDataReporter(sys.stdout, reporting_interval * 5, step=True, potentialEnergy=True, temperature=True))
 print('Starting simulation with', num_steps, 'steps ...')
-t0 = time.time()
-simulation.step(num_steps)
 t1 = time.time()
-print('Simulation complete in', t1 - t0, 'seconds at', temperature)
+simulation.step(num_steps)
+t2 = time.time()
+print('Simulation complete in {} mins at {}. Total wall clock time was {} mins'.format(
+    round((t2 - t1) / 60, 3), temperature, round((t2 - t0) / 60, 3)))
+print('Simulation time was', round(duration, 3), 'ns')
