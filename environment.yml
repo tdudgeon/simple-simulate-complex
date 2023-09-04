@@ -1,15 +1,16 @@
-name: openmm-74
+name: openmm-77
 channels:
-  - omnia
   - plotly
   - conda-forge
 dependencies:
-  - python=3.7
-  - openmm=7.4.2
-  - openmmforcefields=0.7.4
-  - parmed=3.2
-  - pdbfixer=1.6
-  - rdkit=2022.03
-  - mdtraj=1.9.4
+  - python=3.10
+  - openmm=7.7
+  - openmmforcefields=0.11.2
+  - openff-forcefields=2023.08.0
+  - openff-toolkit=0.14.3
+  - parmed=4.1
+  - pdbfixer=1.8
+  - rdkit=2023.03
+  - mdtraj=1.9.9
   - plotly=4.9.0
-  - python-kaleido=0.0.3
+  - python-kaleido=0.2.1

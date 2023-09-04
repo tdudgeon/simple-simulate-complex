@@ -12,6 +12,23 @@ What I'm looking for is for this to be as simple as possible:
 
 Many thanks to @jchodera and others in the OpenMM community for help in putting these scripts together.
 
+## Versions and branches
+
+OpenMM and its related tools change quite a bit over time. The original work here was based on OpenMM version 7.4,
+and the tools have now been updated for newer versions. Because the code is somewhat version dependent I have created
+branches for specific versions. The code on master branch will typically be for the latest version I have used (not
+always the latest version of OpenMM).
+
+### History
+
+#### 2020
+* initial version based on OpenMM 7.4
+* main tools are for simulating a ligand-protein complex with and without solvent
+
+#### Sep 2023
+* updated for OpenMM 7.7
+* better handling of commandline options (using argparse)
+
 ## simulateProtein.py: Basic Protein Simulation
 
 Minimal example of setting up a protein and doing a simple minimisation.
