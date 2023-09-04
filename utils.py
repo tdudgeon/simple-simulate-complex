@@ -1,5 +1,5 @@
 import os
-from simtk.openmm import Platform
+from openmm import Platform
 
 def get_platform():
     os_platform = os.getenv('PLATFORM')

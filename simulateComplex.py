@@ -82,8 +82,8 @@ print('Simulating for {} ns'.format(duration))
 
 integrator = LangevinIntegrator(temperature, friction_coeff, step_size)
 # system.addForce(openmm.MonteCarloBarostat(1*unit.atmospheres, temperature, 25))
-print('Uses Periodic box: {}, Default Periodic box: {}'.format(
-    system.usesPeriodicBoundaryConditions(), system.getDefaultPeriodicBoxVectors()))
+# print('Uses Periodic box: {}, Default Periodic box: {}'.format(
+#     system.usesPeriodicBoundaryConditions(), system.getDefaultPeriodicBoxVectors()))
 
 simulation = Simulation(modeller.topology, system, integrator, platform=platform)
 simulation.context.setPositions(modeller.positions)

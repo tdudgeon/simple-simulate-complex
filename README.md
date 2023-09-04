@@ -41,93 +41,67 @@ How to set up a protein-ligand complex simulation.
 
 After some help from @jchodera I put together this example to help illustrate this.
 
-Note: currently this is running with OpenMM 7.4.2 because https://github.com/openmm/openmm/issues/2683
-makes it difficult to use 7.5.0.
-
 ```
- python simulateComplex.py protein.pdb ligand1.mol output 5000
+python simulateComplex.py -p protein.pdb -l ligand1.mol -o output -s 5000
 ```
-The arguments:
+Options:
+```
+$ python simulateComplex.py --help
+usage: simulateComplex.py [-h] -p PROTEIN -l LIGAND [-o OUTPUT] [-s STEPS] [-z STEP_SIZE] [-f FRICTION_COEFF] [-i INTERVAL] [-t TEMPERATURE] [-e EQUILIBRATION_STEPS] [--protein-force-field PROTEIN_FORCE_FIELD]
+                          [--ligand-force-field LIGAND_FORCE_FIELD]
 
-1. protein.pdb - a protein with hydrogens ready to simulate (as done in [simulateProtein.py]()
-2. ligand1.mol - ligand in molfile format
-3. The name to use as the base name of the results.
-4. The number of iterations for the simulation. The step size is defined in the script as 2 femtoseconds.
+simulateComplex
 
-The ligand is read using RDKit and then processed to:
-* Add hydrogens
-* Define the stereochemistry
+options:
+  -h, --help            show this help message and exit
+  -p PROTEIN, --protein PROTEIN
+                        Protein PDB file
+  -l LIGAND, --ligand LIGAND
+                        Ligand molfile
+  -o OUTPUT, --output OUTPUT
+                        Base name for output files (output.dcd
+  -s STEPS, --steps STEPS
+                        Number of steps
+  -z STEP_SIZE, --step-size STEP_SIZE
+                        Step size (ps
+  -f FRICTION_COEFF, --friction-coeff FRICTION_COEFF
+                        Friction coefficient (ps
+  -i INTERVAL, --interval INTERVAL
+                        Reporting interval
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        Temperature (K)
+  -e EQUILIBRATION_STEPS, --equilibration-steps EQUILIBRATION_STEPS
+                        Number of equilibration steps
+  --protein-force-field PROTEIN_FORCE_FIELD
+                        Protein force field
+  --ligand-force-field LIGAND_FORCE_FIELD
+                        Ligand force field
+```
 
 The protein is then read in PDB format and added to a Modeller object.
 The ligand is then added to the Modeller to generate the complex.
 The system is then prepared using the appropriate force fields.
 
-
 Try the simulation as:
 
 ```
-python simulateComplex.py protein.pdb ligand1.mol output 5000
-Warning: Unable to load toolkit 'OpenEye Toolkit'. The Open Force Field Toolkit does not require the OpenEye Toolkits, and can use RDKit/AmberTools instead. However, if you have a valid license for the OpenEye Toolkits, consider installing them for faster performance and additional file format support: https://docs.eyesopen.com/toolkits/python/quickstart-python/linuxosx.html OpenEye offers free Toolkit licenses for academics: https://www.eyesopen.com/academic-licensing
+$ python simulateComplex.py -p protein.pdb -l ligand1.mol -o output -s 5000
+simulateComplex:  Namespace(protein='protein.pdb', ligand='ligand1.mol', output='output', steps=5000, step_size=0.002, friction_coeff=1, interval=1000, temperature=300, equilibration_steps=200, protein_force_field='amber/ff14SB.xml', ligand_force_field='gaff-2.11')
 Processing protein.pdb and ligand1.mol with 5000 steps generating outputs output_complex.pdb output_minimised.pdb output_traj.pdb output_traj.dcd
-using platform CPU
-Reading ligand
-Adding hydrogens
+Using platform CUDA
+Set precision for platform CUDA to mixed
 Reading protein
 Preparing complex
 System has 4666 atoms
 Preparing system
-
-Welcome to antechamber 17.3: molecular input file processor.
-
-acdoctor mode is on: check and diagnosis problems in the input file.
--- Check Format for sdf File --
-   Status: pass
--- Check Unusual Elements --
-   Status: pass
--- Check Open Valences --
-   Status: pass
--- Check Geometry --
-      for those bonded   
-      for those not bonded   
-   Status: pass
--- Check Weird Bonds --
-   Status: pass
--- Check Number of Units --
-   Status: pass
-acdoctor mode has completed checking the input file.
-
-Info: Total number of electrons: 80; net charge: 0
-
-Running: /home/timbo/miniconda3/envs/openmm-74/bin/sqm -O -i sqm.in -o sqm.out
-
-
-Welcome to antechamber 17.3: molecular input file processor.
-
-acdoctor mode is on: check and diagnosis problems in the input file.
--- Check Format for mol2 File --
-   Status: pass
--- Check Unusual Elements --
-   Status: pass
--- Check Open Valences --
-   Status: pass
--- Check Geometry --
-      for those bonded   
-      for those not bonded   
-   Status: pass
--- Check Weird Bonds --
-   Status: pass
--- Check Number of Units --
-   Status: pass
-acdoctor mode has completed checking the input file.
-
-
-Uses Periodic box: False , Default Periodic box: [Quantity(value=Vec3(x=2.0, y=0.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=2.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=0.0, z=2.0), unit=nanometer)]
+Simulating for 0.01 ns
 Minimising ...
 Equilibrating ...
 Starting simulation with 5000 steps ...
 #"Step","Potential Energy (kJ/mole)","Temperature (K)"
-5000,-18315.23210555748,332.45093440432925
-Simulation complete in 97.02251291275024 seconds at 330 K
+5000,-19712.275550323426,295.415879346069
+Simulation complete in 0.02 mins at 300 K. Total wall clock time was 0.103 mins
+Simulation time was 0.01 ns
 ```
 
 The files `output_complex.pdb`, `output_minimised.pdb` and `output_traj.dcd` are generated.
@@ -138,18 +112,23 @@ See the code for details and gotchas.
 ## simulateComplexWithSolvent.py: Simulation with explicit solvent
 
 ```
-python simulateComplexWithSolvent.py protein.pdb ligand1.mol output 5000
+python simulateComplexWithSolvent.py -p protein.pdb -l ligand1.mol -o output -s 5000
 ```
 
-Build on the previous [simulateComplex.py]() example by including explicit solvent.
-The system now has 58,052 atoms and takes quite a lot longer to simulate, almost 2 mins using
-my laptop's GeForce GTX 1050 GPU. A 1ns simulation takes just under one hour.
+Build on the previous [simulateComplex.py]() example by including explicit solvent and a periodic box.
+The system now has 58,052 atoms and takes quite a lot longer to simulate.
+On my laptop's GeForce GTX 1050 GPU it takes almost 2 mins. A 1ns simulation takes just under one hour. (these were using
+OpenMM 7.4).
+On a newer Geforce RTX 3060 GPU (a modern mid-range gamers card) it takes just over half a minute, and the 1ns simulation
+takes approx 15 mins.
 
 Output is similar to the previous example.
 See the code for details and gotchas.
 
 
 ## Protein and ligand preparation
+
+*Note: these scripts have not yet been updated for OpenMM 77*
 
 The previous methods were a bit of a cheat as they used a protein that had been fully prepared for
 simulation. It's pretty unlikely you will start with a protein in that state. There are 2 scripts that
