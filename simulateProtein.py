@@ -1,7 +1,7 @@
 from openmmforcefields.generators import SystemGenerator
-from simtk import unit
-from simtk.openmm.app import PDBFile, Simulation
-from simtk.openmm import *
+from openmm import unit
+from openmm.app import PDBFile, Simulation
+from openmm import *
 
 protein_pdb = PDBFile('protein.pdb')
 
@@ -18,6 +18,8 @@ simulation.minimizeEnergy()
 
 # write out the minimised PDB
 with open('minimised1.pdb', 'w') as outfile:
-    PDBFile.writeFile(protein_pdb.topology, simulation.context.getState(getPositions=True, enforcePeriodicBox=False).getPositions(), file=outfile, keepIds=True)
+    PDBFile.writeFile(protein_pdb.topology,
+                      simulation.context.getState(getPositions=True, enforcePeriodicBox=True).getPositions(),
+                      file=outfile, keepIds=True)
 
 print('Done')

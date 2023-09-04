@@ -10,6 +10,11 @@ What I'm looking for is for this to be as simple as possible:
 5. simulate
 6. analyse
 
+You might also want to look at this detailed example from openforcefields:
+https://github.com/openforcefield/openff-toolkit/tree/stable/examples/toolkit_showcase.
+It is a more elegant approach as it would allow to prepare a system for multiple MM toolkits (Gromacs, Amber etc.)
+However, I can't get it to work for a number of reasons, so the examples here stick to using mostly OpenMM tooling.
+
 Many thanks to @jchodera and others in the OpenMM community for help in putting these scripts together.
 
 ## Versions and branches
@@ -30,6 +35,10 @@ always the latest version of OpenMM).
 * better handling of commandline options (using argparse)
 
 ## simulateProtein.py: Basic Protein Simulation
+
+```
+python simulateProtein.py protein.pdb
+```
 
 Minimal example of setting up a protein and doing a simple minimisation.
 
