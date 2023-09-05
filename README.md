@@ -32,7 +32,9 @@ always the latest version of OpenMM).
 
 #### Sep 2023
 * updated for OpenMM 7.7
+* combined `simulateComplex.py` and `simulateComplexWithSolvent.py` into a single script
 * better handling of commandline options (using argparse)
+* many more options specifiable
 
 ## simulateProtein.py: Basic Protein Simulation
 
@@ -44,22 +46,20 @@ Minimal example of setting up a protein and doing a simple minimisation.
 
 Not much to say about this.
 
-## simulateComplex.py: Basic Complex Simulation
+## simulateComplex.py: Protein-ligand Complex Simulation
 
 How to set up a protein-ligand complex simulation.
+This script replaces the original one and `simulateComplexWithSolvent.py` and provides a single script that assembles
+a protein and a ligand and optionally allows to solvate the system.
 
-After some help from @jchodera I put together this example to help illustrate this.
-
-```
-python simulateComplex.py -p protein.pdb -l ligand1.mol -o output -s 5000
-```
 Options:
 ```
-$ python simulateComplex.py --help
-usage: simulateComplex.py [-h] -p PROTEIN -l LIGAND [-o OUTPUT] [-s STEPS] [-z STEP_SIZE] [-f FRICTION_COEFF] [-i INTERVAL] [-t TEMPERATURE] [-e EQUILIBRATION_STEPS] [--protein-force-field PROTEIN_FORCE_FIELD]
-                          [--ligand-force-field LIGAND_FORCE_FIELD]
+$ python simulateComplex.py -h
+usage: simulateComplex.py [-h] -p PROTEIN -l LIGAND [-o OUTPUT] [-s STEPS] [-z STEP_SIZE] [-f FRICTION_COEFF] [-i INTERVAL] [-t TEMPERATURE] [--solvate] [--padding PADDING]
+                          [--water-model {tip3p,spce,tip4pew,tip5p,swm4ndp}] [--positive-ion POSITIVE_ION] [--negative-ion NEGATIVE_ION] [--ionic-strength IONIC_STRENGTH] [--no-neutralize] [-e EQUILIBRATION_STEPS]
+                          [--protein-force-field PROTEIN_FORCE_FIELD] [--ligand-force-field LIGAND_FORCE_FIELD] [--water-force-field WATER_FORCE_FIELD]
 
-simulateComplex
+simulateComplexWithSolvent
 
 options:
   -h, --help            show this help message and exit
@@ -68,72 +68,114 @@ options:
   -l LIGAND, --ligand LIGAND
                         Ligand molfile
   -o OUTPUT, --output OUTPUT
-                        Base name for output files (output.dcd
+                        Base name for output files
   -s STEPS, --steps STEPS
                         Number of steps
   -z STEP_SIZE, --step-size STEP_SIZE
                         Step size (ps
   -f FRICTION_COEFF, --friction-coeff FRICTION_COEFF
-                        Friction coefficient (ps
+                        Friction coefficient (ps)
   -i INTERVAL, --interval INTERVAL
                         Reporting interval
   -t TEMPERATURE, --temperature TEMPERATURE
                         Temperature (K)
+  --solvate             Add solvent box
+  --padding PADDING     Padding for solvent box (A)
+  --water-model {tip3p,spce,tip4pew,tip5p,swm4ndp}
+                        Water model for solvation
+  --positive-ion POSITIVE_ION
+                        Positive ion for solvation
+  --negative-ion NEGATIVE_ION
+                        Negative ion for solvation
+  --ionic-strength IONIC_STRENGTH
+                        Ionic strength for solvation
+  --no-neutralize       Don't add ions to neutralize
   -e EQUILIBRATION_STEPS, --equilibration-steps EQUILIBRATION_STEPS
                         Number of equilibration steps
   --protein-force-field PROTEIN_FORCE_FIELD
                         Protein force field
   --ligand-force-field LIGAND_FORCE_FIELD
                         Ligand force field
+  --water-force-field WATER_FORCE_FIELD
+                        Ligand force field
 ```
 
-The protein is then read in PDB format and added to a Modeller object.
+Many of the options are related to the solvation and are not needed unless you use the `--solvate` option. Most options
+have sensible defaults.
+
+The protein is read in PDB format and added to a Modeller object.
 The ligand is then added to the Modeller to generate the complex.
-The system is then prepared using the appropriate force fields.
+If `--solvate` is specified a solvent box is added.
+The system is then prepared using the appropriate force fields, the complex minimised, then equilibrated and finally
+the MD simulation is run.
 
-Try the simulation as:
+Try the simulation without solvation as:
 
 ```
-$ python simulateComplex.py -p protein.pdb -l ligand1.mol -o output -s 5000
-simulateComplex:  Namespace(protein='protein.pdb', ligand='ligand1.mol', output='output', steps=5000, step_size=0.002, friction_coeff=1, interval=1000, temperature=300, equilibration_steps=200, protein_force_field='amber/ff14SB.xml', ligand_force_field='gaff-2.11')
-Processing protein.pdb and ligand1.mol with 5000 steps generating outputs output_complex.pdb output_minimised.pdb output_traj.pdb output_traj.dcd
+$ python simulateComplex.py -p protein.pdb -l ligand1.mol
+simulateComplexWithSolvent:  Namespace(protein='protein.pdb', ligand='ligand1.mol', output='output', steps=5000, step_size=0.002, friction_coeff=1, interval=1000, temperature=300, solvate=False, padding=10, water_model='tip3p', positive_ion='Na+', negative_ion='Cl-', ionic_strength=0.0, no_neutralize=False, equilibration_steps=200, protein_force_field='amber/ff14SB.xml', ligand_force_field='gaff-2.11', water_force_field='amber/tip3p_standard.xml')
+Processing protein.pdb and ligand1.mol with 5000 steps generating outputs output_complex.pdb output_minimised.pdb output_traj.dcd
 Using platform CUDA
 Set precision for platform CUDA to mixed
+Reading ligand
+Preparing system
 Reading protein
 Preparing complex
+System has 4645 atoms
+Adding ligand...
 System has 4666 atoms
-Preparing system
 Simulating for 0.01 ns
+No Periodic Box
 Minimising ...
 Equilibrating ...
 Starting simulation with 5000 steps ...
 #"Step","Potential Energy (kJ/mole)","Temperature (K)"
-5000,-19712.275550323426,295.415879346069
-Simulation complete in 0.02 mins at 300 K. Total wall clock time was 0.103 mins
+5000,-19906.630997571585,297.9683027771655
+Simulation complete in 0.02 mins at 300 K. Total wall clock time was 0.106 mins
 Simulation time was 0.01 ns
 ```
 
 The files `output_complex.pdb`, `output_minimised.pdb` and `output_traj.dcd` are generated.
-The first is the complex, the second is that complex mimimised ready for simulation, the third the MD trajectory in DCD format.
+The first is the complex, the second is that complex mimimised ready for simulation, the third the MD trajectory in DCD
+format.
 
 See the code for details and gotchas.
 
-## simulateComplexWithSolvent.py: Simulation with explicit solvent
+To run with solvation use something like this:
 
 ```
-python simulateComplexWithSolvent.py -p protein.pdb -l ligand1.mol -o output -s 5000
+$ python simulateComplex.py -p protein.pdb -l ligand1.mol --solvate
+simulateComplexWithSolvent:  Namespace(protein='protein.pdb', ligand='ligand1.mol', output='output', steps=5000, step_size=0.002, friction_coeff=1, interval=1000, temperature=300, solvate=True, padding=10, water_model='tip3p', positive_ion='Na+', negative_ion='Cl-', ionic_strength=0.0, no_neutralize=False, equilibration_steps=200, protein_force_field='amber/ff14SB.xml', ligand_force_field='gaff-2.11', water_force_field='amber/tip3p_standard.xml')
+Processing protein.pdb and ligand1.mol with 5000 steps generating outputs output_complex.pdb output_minimised.pdb output_traj.dcd
+Using platform CUDA
+Set precision for platform CUDA to mixed
+Reading ligand
+Preparing system
+Reading protein
+Preparing complex
+System has 4645 atoms
+Adding ligand...
+System has 4666 atoms
+Adding solvent...
+System has 58052 atoms
+Simulating for 0.01 ns
+Default Periodic box: [Quantity(value=Vec3(x=8.481300000000001, y=0.0, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=8.481300000000001, z=0.0), unit=nanometer), Quantity(value=Vec3(x=0.0, y=0.0, z=8.481300000000001), unit=nanometer)]
+Minimising ...
+Equilibrating ...
+Starting simulation with 5000 steps ...
+#"Step","Potential Energy (kJ/mole)","Temperature (K)"
+5000,-742769.3383788001,301.45460839045137
+Simulation complete in 0.145 mins at 300 K. Total wall clock time was 0.508 mins
+Simulation time was 0.01 ns
 ```
 
-Build on the previous [simulateComplex.py]() example by including explicit solvent and a periodic box.
 The system now has 58,052 atoms and takes quite a lot longer to simulate.
 On my laptop's GeForce GTX 1050 GPU it takes almost 2 mins. A 1ns simulation takes just under one hour. (these were using
 OpenMM 7.4).
 On a newer Geforce RTX 3060 GPU (a modern mid-range gamers card) it takes just over half a minute, and the 1ns simulation
-takes approx 15 mins.
+takes approx 15 mins, a 100ns simulation about 20 hours.
 
 Output is similar to the previous example.
-See the code for details and gotchas.
-
 
 ## Protein and ligand preparation
 
