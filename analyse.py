@@ -1,22 +1,45 @@
-import sys
+import sys, argparse
 import mdtraj as md
 import plotly.graph_objects as go
-import plotly.express as px
 
-if len(sys.argv) != 4:
-    print('Usage: python analyse.py trajectory.dcd topology.pdb output')
-    print('Analyse MD trajectory')
-    exit(1)
 
-traj_in = sys.argv[1]
-topol_in = sys.argv[2]
-outfile = sys.argv[3]
+# Typical usage:
+# python analyse.py -p output_minimised.pdb -t output_traj.dcd -o output_reimaged -r
+
+parser = argparse.ArgumentParser(description="analyse")
+
+parser.add_argument("-p", "--protein", required=True, help="Protein PDB file")
+parser.add_argument("-t", "--trajectory", required=True, help="Trajectory DCD file")
+parser.add_argument("-o", "--output", required=True, help="Output base name")
+parser.add_argument("-r", "--remove-waters", action='store_true', help="Remove waters, salts etc.")
+
+args = parser.parse_args()
+print("analyse: ", args)
+
+traj_in = args.trajectory
+topol_in = args.protein
+out_base = args.output
 
 print('Reading trajectory', traj_in)
 t = md.load(traj_in, top=topol_in)
+t.image_molecules(inplace=True)
+
+if args.remove_waters:
+    print('Removing waters')
+    t = t.atom_slice(t.top.select('not resname HOH POPC CL NA'))
+
+print('Realigning')
+prot = t.top.select('protein')
+t.superpose(t[0], atom_indices=prot)
+
+print('Writing re-imaged PDB', out_base + '.pdb')
+t[0].save(out_base + '.pdb')
+
+print('Writing re-imaged trajectory', out_base + '.dcd')
+t.save(out_base + '.dcd')
 
 topology = t.topology
-print(topology)
+# print(topology)
 print('Number of frames:', t.n_frames)
 
 # print('All residues: %s' % [residue for residue in t.topology.residues])
@@ -36,6 +59,6 @@ fig.add_trace(go.Scatter(x=t.time, y=rmsds_bck, mode='lines', name='Backbone'))
 
 fig.update_layout(title='Trajectory for ' + traj_in, xaxis_title='Frame', yaxis_title='RMSD')
 
-file = outfile + '.svg'
-print('Writing output to', file)
+file = out_base + '.svg'
+print('Writing RMSD output to', file)
 fig.write_image(file)

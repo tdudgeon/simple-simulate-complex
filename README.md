@@ -177,6 +177,10 @@ takes approx 15 mins, a 100ns simulation about 20 hours.
 
 Output is similar to the previous example.
 
+Note that when adding solvent you are creating a periodic box system, and this can introduce weird visual quirks.
+See [this discussion](https://github.com/openmm/openmm/issues/4218) for more details.
+Those quirks can be resolved by using the `analyse.py` script that is described below.
+
 ## Protein and ligand preparation
 
 *Note: these scripts have not yet been updated for OpenMM 77*
@@ -207,19 +211,60 @@ It doesn't do everything that's needed, so other toolkits will be required:
 
 ## Analysis
 
-The MD trajectories are analysed using [MDTraj](http://mdtraj.org/) and the script [analyse.py]().
+The MD trajectories are analysed using the script [analyse.py]() which uses [MDTraj](http://mdtraj.org/).
+
+Usage:
 ```
-python analyse.py trajectory.dcd topology.pdb output
+$ python analyse.py -h
+usage: analyse.py [-h] -p PROTEIN -t TRAJECTORY -o OUTPUT [-r]
+
+analyse
+
+options:
+  -h, --help            show this help message and exit
+  -p PROTEIN, --protein PROTEIN
+                        Protein PDB file
+  -t TRAJECTORY, --trajectory TRAJECTORY
+                        Trajectory DCD file
+  -o OUTPUT, --output OUTPUT
+                        Output base name
+  -r, --remove-waters   Remove waters, salts etc.
 ```
 This requires the trajectory to be written out using the DCD reporter. The topology can be read from the minimised
 starting point of the MD run. This can be used for simulations with or without water.
 
 The RMSD of the ligand and the protein C-alpha atoms compared to the start of the trajectory are displayed in a chart
-that is generated using [Plotly](https://plotly.com/graphing-libraries/)) with the name output.svg (where 'output' is the
-last parameter passed to the `analyse.py` script).
+that is generated using [Plotly](https://plotly.com/graphing-libraries/)) with the name output.svg.
 
-Example analysis:
+The trajectory is also re-imaged so that the ligand is in the correct location with respect to the protein (the periodic
+box can cause some wierd visual aberations), and the waters, ions etc. removed if required.
+
+Example:
+```
+$ python analyse.py -p output_minimised.pdb -t output_traj.dcd -o output_reimaged -r
+analyse:  Namespace(protein='output_minimised.pdb', trajectory='output_traj.dcd', output='output_reimaged', remove_waters=True)
+Reading trajectory output_traj.dcd
+Removing waters
+Realigning
+Writing re-imaged PDB output_reimaged.pdb
+Writing re-imaged trajectory output_reimaged.dcd
+Number of frames: 500
+21 ligand atoms
+1216 backbone atoms
+Writing RMSD output to output_reimaged.svg
+```
+
+In this case 3 files are created:
+* output_reimaged.svg - SVG of the RMSD of the backbone and ligand
+* output_reimaged.pdb - the re-imaged PDB file
+* output_reimaged.dcd - the re-imaged trajectory
+
+Example RMSD analysis:
 ![Example analysis](analyse.svg?raw=true "Example analysis]")
+
+The trajectory can be nicely viewed in [NGLView](http://nglviewer.org/ngl/).
+First load the PDB file, then click on the menu for the item in the selector on the right, find the Trajectory section
+and load the DCD file.
 
 For complexes that are stable the RMSDs should not change dramatically. For a complex that is unstable the ligand may 
 detach from the protein and the RMSD will increase dramatically. Relatively long simulations will be needed, maybe in the 

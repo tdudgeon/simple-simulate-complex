@@ -1,7 +1,7 @@
 .idea
 complex*.pdb
 minimised*.pdb
-output*.pdb
+output*
 ligand_prepared.pdb
 protein_prepared.pdb
 Mpro-x*

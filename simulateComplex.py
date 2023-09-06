@@ -7,7 +7,7 @@ import sys, time, argparse
 from openff.toolkit import Molecule
 from openmmforcefields.generators import SystemGenerator
 import openmm
-from openmm import app, unit, LangevinIntegrator
+from openmm import app, unit, LangevinIntegrator, Vec3
 from openmm.app import PDBFile, Simulation, Modeller, PDBReporter, StateDataReporter, DCDReporter
 
 import utils
@@ -15,7 +15,7 @@ import utils
 t0 = time.time()
 
 
-parser = argparse.ArgumentParser(description="simulateComplexWithSolvent")
+parser = argparse.ArgumentParser(description="simulateComplex")
 
 parser.add_argument("-p", "--protein", required=True, help="Protein PDB file")
 parser.add_argument("-l", "--ligand", required=True, help="Ligand molfile")
@@ -40,7 +40,7 @@ parser.add_argument("--ligand-force-field", default='gaff-2.11', help="Ligand fo
 parser.add_argument("--water-force-field", default='amber/tip3p_standard.xml', help="Ligand force field")
 
 args = parser.parse_args()
-print("simulateComplexWithSolvent: ", args)
+print("simulateComplex: ", args)
 
 pdb_in = args.protein
 mol_in = args.ligand
@@ -124,7 +124,6 @@ print('Minimising ...')
 simulation.minimizeEnergy()
 
 # Write out the minimised PDB.
-# Note: the enforcePeriodicBox=True option does not seem to work correctly
 with open(output_min, 'w') as outfile:
     PDBFile.writeFile(modeller.topology, context.getState(getPositions=True, enforcePeriodicBox=True).getPositions(), file=outfile, keepIds=True)
 
@@ -134,7 +133,6 @@ print('Equilibrating ...')
 simulation.step(equilibration_steps)
 
 # Run the simulation.
-# The enforcePeriodicBox=True options does not seem to work correctly.
 simulation.reporters.append(DCDReporter(output_traj_dcd, reporting_interval, enforcePeriodicBox=True))
 simulation.reporters.append(StateDataReporter(sys.stdout, reporting_interval * 5, step=True, potentialEnergy=True, temperature=True))
 print('Starting simulation with', num_steps, 'steps ...')
